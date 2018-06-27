@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.github.sulne.blog.dao.BlogDao">
+	<resultMap type="Blog" id="blogResult">
+		<id property="id" column="id"/>
+		<result property="no" column="no"/>
+		<result property="title" column="title"/>
+		<result property="date" column="date"/>
+		<result property="tags" column="tags"/>
+		<result property="content" column="content"/>
+		<result property="userId" column="user_id"/>
+	</resultMap>
+	<select id = "get" resultMap="blogResult" parameterType="String">
+		SELECT
+			b.id,
+			b.no,
+			b.title,
+			b.date,
+			b.tags,
+			b.content,
+			b.user_id
+		FROM
+			blog b
+		WHERE
+			b.id = #{id}
+	</select>
+
+	<select id = "find" resultMap="blogResult" parameterType="Integer">
+		SELECT
+		b.id,
+		b.no,
+		b.title,
+		b.date,
+		b.tags,
+		b.content,
+		b.user_id
+		FROM
+		blog b
+		WHERE
+		b.no = #{no}
+	</select>
+	
+	<insert id="create" parameterType="Blog">
+		INSERT INTO blog
+			(id,no,title,date,tags,content,user_id)
+			VALUES
+			(
+				#{id},
+				#{no},
+				#{title},
+				#{date},
+				#{tags},
+				#{content},
+				#{userId}
+			)
+	</insert>
+	
+	<update id="update" parameterType="Blog">
+		UPDATE blog
+		SET title = #{title},
+		 date = #{date},
+		 tags = #{tags},
+		 content = #{content}
+		WHERE
+			id = #{id}
+	</update>
+	
+	<delete id="delete" parameterType="String">
+		DELETE
+		FROM
+			blog
+		WHERE
+			id = #{id}
+	</delete>
+	
+	<select id="list" resultMap="blogResult">
+		select * from blog
+	</select>
+</mapper>

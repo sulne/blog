@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.github.sulne.blog.dao.TimeLineDao">
+    <resultMap id="timeLineResult" type="TimeLine">
+        <id property="id" column="id"/>
+        <result property="date" column="date"/>
+        <result property="content" column="content"/>
+    </resultMap>
+    <select id="get" parameterType="String" resultMap="timeLineResult">
+      SELECT
+        *
+      FROM
+        time_line
+      WHERE
+        id = {id}
+    </select>
+    <select id="list" resultMap="timeLineResult">
+      SELECT
+        *
+      FROM
+        time_line
+    </select>
+    <insert id="create" parameterType="TimeLine">
+      INSERT INTO time_line (id, date, content)
+      VALUES
+	    (
+          #{id},
+          #{date},
+          #{content}
+	    )
+    </insert>
+    <update id="update" parameterType="TimeLine">
+        UPDATE time_line
+        SET date = #{date},
+          content = #{content}
+        WHERE id = #{id}
+    </update>
+    <delete id="delete" parameterType="String">
+        DELETE
+        FROM
+          time_line
+        WHERE
+          id = #{id}
+    </delete>
+</mapper>

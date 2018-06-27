@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.github.sulne.blog.dao.WebLogDao">
+	<resultMap type="WebLog" id="webLogResult">
+		<id property="id" column="id"/>
+		<result property="type" column="type"/>
+		<result property="url" column="url"/>
+		<result property="ip" column="ip"/>
+		<result property="method" column="method"/>
+		<result property="parameters" column="parameters"/>
+		<result property="userId" column="user_id"/>
+		<result property="ret" column="ret"/>
+		<result property="time" column="time"/>
+	</resultMap>
+	<select id = "get" resultMap="webLogResult" parameterType="String">
+		SELECT
+		t.id,
+		t.type,
+		t.url,
+		t.ip,
+		t.method,
+		t.parameters,
+		t.ret,
+		t.time,
+		t.user_id
+		FROM
+		web_log t
+		WHERE
+		t.id = #{id}
+	</select>
+
+	<insert id="create" parameterType="WebLog">
+		INSERT INTO web_log (
+			id,
+			url,
+			type,
+			ip,
+			method,
+			parameters,
+			ret,
+			user_id,
+			time
+		)
+		VALUES
+			(
+				#{id},
+				#{url},
+				#{type},
+				#{ip},
+				#{method},
+				#{parameters},
+				#{ret},
+				#{userId},
+				#{time}
+			)
+	</insert>
+
+	<select id="list" resultMap="webLogResult">
+		select * from web_log
+	</select>
+</mapper>

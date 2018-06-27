@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body ng-app="myApp" ng-controller="timeLineCtrl">
+<ul>
+    <li ng-repeat="timeLine in timeLines">{{timeLine.date}}{{timeLine.content}}</li>
+</ul>
+
+<div ng-app="app" ng-controller="MainController">
+
+<h2>玩转spring boot——websocket</h2>
+<h4>
+    出处：刘冬博客 <a href="http://www.cnblogs.com/goodhelper">http://www.cnblogs.com/goodhelper</a>
+</h4>
+
+<label>WebSocket连接状态:</label>
+<button type="button" ng-disabled="data.connected" ng-click="connect()">连接</button>
+<button type="button" ng-click="disconnect()"
+        ng-disabled="!data.connected">断开</button>
+<br />
+<br />
+<div ng-show="data.connected">
+    <label>{{data.time}}</label> <br /> <br /> <input type="text"
+                                                      ng-model="data.message" placeholder="请输入内容..." />
+    <button ng-click="send()" type="button">发送</button>
+    <br /> <br /> 消息列表： <br />
+    <table>
+        <thead>
+        <tr>
+            <th>内容</th>
+            <th>时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in data.rows">
+            <td>{{row.message}}</td>
+            <td>{{row.date}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+<script type="text/javascript" src="../static/angular/angular.js" th:src="@{/angular/angular.js}"></script>
+<script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+<script>
+    var app = angular.module('myApp', []);
+    app.controller('timeLineCtrl', function($scope, $http) {
+        $http.get("/timeLine").then(function (response) {
+            console.log(response);
+            $scope.timeLines = response.data;
+        });
+    });
+
+    var stompClient = null;
+
+    function setConnected(connected) {
+        $("#connect").prop("disabled", connected);
+        $("#disconnect").prop("disabled", !connected);
+        if (connected) {
+            $("#conversation").show();
+        }
+        else {
+            $("#conversation").hide();
+        }
+        $("#greetings").html("");
+    }
+
+    function connect() {
+        var socket = new SockJS('/gs-guide-websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            setConnected(true);
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/greetings', function (greeting) {
+                showGreeting(JSON.parse(greeting.body).content);
+            });
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log("Disconnected");
+    }
+
+    function sendName() {
+        stompClient.send("/app/hello", {}, JSON.stringify({'name': $("#name").val()}));
+    }
+
+    function showGreeting(message) {
+        $("#greetings").append("<tr><td>" + message + "</td></tr>");
+    }
+
+    $(function () {
+        $("form").on('submit', function (e) {
+            e.preventDefault();
+        });
+        $( "#connect" ).click(function() { connect(); });
+        $( "#disconnect" ).click(function() { disconnect(); });
+        $( "#send" ).click(function() { sendName(); });
+    });
+</script>
+</body>
+</html>

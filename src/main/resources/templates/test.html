@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TEST</title>
+    <script type="text/javascript" src="../static/jquery-3.3.1.min.js" th:src="@{/jquery-3.3.1.min.js}"></script>
+    <script type="text/javascript" src="../static/angular/angular.js" th:src="@{/angular/angular.js}"></script>
+    <script type="text/javascript" src="../static/socket/sockjs.min.js" th:src="@{/socket/sockjs.min.js}"></script>
+    <script type="text/javascript" src="../static/socket/stomp.min.js" th:src="@{/socket/stomp.min.js}"></script>
+    <script type="text/javascript">
+        /*<![CDATA[*/
+
+        var stompClient = null;
+
+        var app = angular.module('app', []);
+        app.controller('MainController', function($rootScope, $scope, $http) {
+
+            $scope.data = {
+                //连接状态
+                connected : false,
+                //消息
+                message : '',
+                rows : []
+            };
+
+            //连接
+            $scope.connect = function() {
+                var socket = new SockJS('/my-websocket');
+                stompClient = Stomp.over(socket);
+                stompClient.debug = function() {
+                    return false;
+                };
+                stompClient.connect({}, function(frame) {
+                    console.log(frame);
+                    // 注册发送消息
+                    stompClient.subscribe('/topic/send', function(msg) {
+                        $scope.data.rows.push(msg.body);
+                        $scope.data.connected = true;
+                        $scope.$apply();
+                    });
+                    // 注册推送时间回调
+                    stompClient.subscribe('/topic/callback', function(r) {
+                        $scope.data.time = '当前服务器时间：' + r.body;
+                        $scope.data.connected = true;
+                        $scope.$apply();
+                    });
+                    stompClient.subscribe('/topic/test', function(r) {
+                        console.log('测试：' + r.body);
+                        $scope.data.connected = true;
+                        $scope.$apply();
+                    });
+                    $scope.data.connected = true;
+                    $scope.$apply();
+                });
+            };
+
+            $scope.disconnect = function() {
+                if (stompClient != null) {
+                    stompClient.disconnect();
+                }
+                $scope.data.connected = false;
+            }
+
+            $scope.send = function() {
+                stompClient.send("/app/send", {}, $scope.data.message);
+            }
+        });
+        /*]]>*/
+    </script>
+</head>
+<body ng-app="app" ng-controller="MainController">
+
+<h2>玩转spring boot——websocket</h2>
+
+<label>WebSocket连接状态:</label>
+<button type="button" ng-disabled="data.connected" ng-click="connect()">连接</button>
+<button type="button" ng-click="disconnect()" ng-disabled="!data.connected">断开</button>
+<br />
+<br />
+<div ng-show="data.connected">
+    <label>{{data.time}}</label> <br /> <br /> <input type="text"
+                                                      ng-model="data.message" placeholder="请输入内容..." />
+    <button ng-click="send()" type="button">发送</button>
+    <br /> <br /> 消息列表： <br />
+    <table>
+        <thead>
+        <tr>
+            <th>内容</th>
+            <th>时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in data.rows track by $index">
+            <td>{{row}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <span id="debug"></span>
+</div>
+</body>
+</html>
